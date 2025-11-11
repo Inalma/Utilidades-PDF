@@ -24,6 +24,7 @@
     <button class="tab-btn active" data-tab="compress">Compresión</button>
     <button class="tab-btn" data-tab="convert">PDF → Word</button>
     <button class="tab-btn" data-tab="merge">Fusionar</button>
+    <button class="tab-btn" data-tab="batch">Fusionar por lotes</button><!-- NUEVO -->
     <button class="tab-btn" data-tab="img2pdf">Imagen → PDF</button><!-- NUEVO -->
     <button class="tab-btn" data-tab="docx2excel">DOCX → Excel</button><!-- NUEVO -->
   </div>
@@ -83,6 +84,31 @@
 
       <p class="hint">Límite 50 MB por archivo. Los temporales se eliminan tras la descarga.</p>
       <p id="mergeMsg" class="status"></p>
+    </div>
+  </div>
+
+  <!-- Fusión por lotes -->
+  <div id="panel-batch" class="panel">
+    <h2 class="panel-title"><span class="badge">Módulo activo</span> Fusionar por lotes (OC + Factura)</h2>
+    <div class="box" id="drop-batch">
+      <p>Sube tus <strong>órdenes de compra</strong> y sus <strong>facturas</strong> correspondientes. Se emparejan por número.</p>
+      <div class="batch-grid">
+        <div>
+          <h3>Órdenes de compra</h3>
+          <input id="batch-orders" type="file" accept="application/pdf" multiple />
+          <p class="hint">Ej: <em>OC-001.pdf, OC-002.pdf...</em></p>
+        </div>
+        <div>
+          <h3>Facturas</h3>
+          <input id="batch-invoices" type="file" accept="application/pdf" multiple />
+          <p class="hint">Ej: <em>Factura-001.pdf, Factura-002.pdf...</em></p>
+        </div>
+      </div>
+      <div class="row">
+        <button id="batch-run">Fusionar lotes</button>
+      </div>
+      <p class="hint">Se genera un ZIP con cada orden y su factura en un único PDF. Límite sugerido: 100 pares.</p>
+      <p id="batch-msg" class="status"></p>
     </div>
   </div>
 

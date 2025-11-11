@@ -163,6 +163,100 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // =========================
+  //  Fusión por lotes (OC + Factura)
+  // =========================
+  const batchDrop = document.getElementById('drop-batch');
+  const batchOrders = document.getElementById('batch-orders');
+  const batchInvoices = document.getElementById('batch-invoices');
+  const batchBtn = document.getElementById('batch-run');
+  const batchMsg = document.getElementById('batch-msg');
+
+  const setBatchMsg = (text, status = '') => {
+    if (!batchMsg) return;
+    batchMsg.textContent = text || '';
+    batchMsg.classList.remove('ok', 'err', 'loading');
+    if (!text) return;
+    if (status === 'ok') batchMsg.classList.add('ok');
+    else if (status === 'err') batchMsg.classList.add('err');
+    else batchMsg.classList.add('loading');
+  };
+
+  const makeFileList = (files = []) => {
+    const dt = new DataTransfer();
+    files.forEach((f) => dt.items.add(f));
+    return dt.files;
+  };
+
+  if (batchDrop) {
+    batchDrop.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      batchDrop.classList.add('drag');
+    });
+    batchDrop.addEventListener('dragleave', () => batchDrop.classList.remove('drag'));
+    batchDrop.addEventListener('drop', (e) => {
+      e.preventDefault();
+      batchDrop.classList.remove('drag');
+      const files = [...(e.dataTransfer?.files || [])].filter(f => f.type === 'application/pdf' || /\.pdf$/i.test(f.name));
+      if (!files.length) return;
+      const oc = [];
+      const fac = [];
+      files.forEach((f) => {
+        const name = f.name.toLowerCase();
+        if (/fact/.test(name)) fac.push(f);
+        else if (/oc|orden/.test(name)) oc.push(f);
+        else {
+          (oc.length <= fac.length ? oc : fac).push(f);
+        }
+      });
+      if (oc.length && batchOrders) batchOrders.files = makeFileList(oc);
+      if (fac.length && batchInvoices) batchInvoices.files = makeFileList(fac);
+    });
+  }
+
+  if (batchBtn && batchOrders && batchInvoices) {
+    batchBtn.addEventListener('click', async () => {
+      const orders = [...(batchOrders.files || [])];
+      const invoices = [...(batchInvoices.files || [])];
+
+      if (!orders.length || !invoices.length) {
+        setBatchMsg('Selecciona órdenes y facturas en PDF.', 'err');
+        return;
+      }
+      if (orders.length !== invoices.length) {
+        setBatchMsg(`Deben tener la misma cantidad. Órdenes: ${orders.length}, Facturas: ${invoices.length}`, 'err');
+        return;
+      }
+
+      setBatchMsg('Procesando lotes...', 'loading');
+      batchBtn.disabled = true;
+
+      try {
+        const fd = new FormData();
+        orders.forEach(f => fd.append('orders', f));
+        invoices.forEach(f => fd.append('invoices', f));
+
+        const res = await fetch('/api/merge-batch', { method: 'POST', body: fd });
+        if (!res.ok) {
+          let detail = '';
+          try { const err = await res.json(); detail = err.error + (err.detail ? `: ${err.detail}` : ''); }
+          catch { detail = res.statusText; }
+          throw new Error(detail || 'Fallo en la fusión por lotes');
+        }
+
+        const blob = await res.blob();
+        const ts = new Date().toISOString().replace(/[:.]/g, '-');
+        downloadBlob(blob, `fusion_lotes_${ts}.zip`);
+        setBatchMsg('ZIP descargado correctamente ✅', 'ok');
+        setTimeout(() => setBatchMsg('', ''), 4000);
+      } catch (e) {
+        setBatchMsg(`Error: ${e.message || e}`, 'err');
+      } finally {
+        batchBtn.disabled = false;
+      }
+    });
+  }
+
+  // =========================
   //  Imagen → PDF
   // =========================
   const imgInput = document.getElementById('imgFile');

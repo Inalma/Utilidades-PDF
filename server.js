@@ -30,6 +30,9 @@ const storage = multer.diskStorage({
 // ====== Cargador de features (modular) ======
 try {
   const { loadFeatures } = require('./api/feature-loader');
+  if (process.env.ENABLE_MERGE_BATCH == null) {
+    process.env.ENABLE_MERGE_BATCH = '1';
+  }
   loadFeatures(app, { UPLOAD_DIR, storage, rootDir: __dirname });
   console.log('[features] loader activo');
 } catch (e) {

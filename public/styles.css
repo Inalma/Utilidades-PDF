@@ -194,7 +194,8 @@ button.secondary {
 #drop.drag,
 #drop2.drag,
 #drop3.drag,
-#drop4.drag {
+#drop4.drag,
+#drop-batch.drag {
   border-color: #999;
   background: #fafafa;
 }
@@ -279,6 +280,26 @@ button.secondary {
   #panel-merge .file-grid {
     grid-template-columns: 1fr;
     gap: 14px;
+  }
+}
+
+/* Lotes OC + Factura */
+#panel-batch .batch-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 28px;
+  margin: 18px 0;
+}
+
+#panel-batch h3 {
+  margin: 0 0 10px;
+  text-align: center;
+  color: var(--green-700);
+}
+
+@media (max-width: 720px) {
+  #panel-batch .batch-grid {
+    gap: 16px;
   }
 }
 
